@@ -39,14 +39,14 @@ endpoint =
 
 {-| Generate a custom `GET` request to obtain the "/space/:spaceId" resource.
 -}
-getSpaceRequest : Http.Request String
+getSpaceRequest : Http.Request Space
 getSpaceRequest =
     Http.request
         { method = "GET"
         , headers = [ Http.header "Authorization" ("Bearer " ++ Auth.accessToken) ]
         , url = endpoint ++ "/spaces/" ++ Auth.spaceId
         , body = Http.emptyBody
-        , expect = Http.expectString
+        , expect = Http.expectJson spaceDecoder
         , timeout = Nothing
         , withCredentials = False
         }
@@ -73,12 +73,6 @@ getSpaceRequest =
 entriesDecoder : Json.Decoder (List Entry)
 entriesDecoder =
     Json.at [ "items" ] (Json.list entryDecoder)
-
-
-
--- fieldDecoder : Json.Decoder Entry
--- fieldDecoder =
---     Json.at [ "fields" ] entryDecoder
 
 
 entryDecoder : Json.Decoder Entry
