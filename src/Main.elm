@@ -52,22 +52,30 @@ update msg model =
                         ( model, Cmd.none )
 
         ApiResponded (Ok newContents) ->
-            ( { model | contents = newContents }, Cmd.none )
+            ( { model | contents = (Debug.log "Api dice" newContents) }, Cmd.none )
 
         ApiResponded (Err error) ->
             let
                 _ =
                     Debug.log "Error es: " error
             in
-                case error of
-                    _ ->
-                        ( model, Cmd.none )
+                ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     div []
         [ span [] [ text model.contents ]
+        , br [] []
+        , div [] (List.map viewEntry model.entries)
+        ]
+
+
+viewEntry : Contentful.Entry -> Html Msg
+viewEntry entry =
+    div []
+        [ h2 [] [ text entry.title ]
+        , article [] [ text entry.body ]
         ]
 
 
@@ -76,11 +84,10 @@ subscriptions model =
     Sub.none
 
 
+
+-- Get initial contentful entries (blog posts)
+
+
 getContentful : Cmd Msg
 getContentful =
     Http.send HandleEntriesResponse Contentful.getEntriesRequest
-
-
-decodeSpacesUrl : Json.Decoder String
-decodeSpacesUrl =
-    Json.at [ "sys", "id" ] Json.string

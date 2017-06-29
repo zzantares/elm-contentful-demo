@@ -54,20 +54,23 @@ getSpaceRequest =
 
 {-| Generate a custom `GET` request to obtain the "/space/:spaceId/entries" resource.
 -}
-
-
-
--- getEntriesRequest : Http.Request (List Entry)
--- getEntriesRequest =
---     Http.request
---         { method = "GET"
---         , headers = [ Http.header "Authorization" ("Bearer " ++ Auth.accessToken) ]
---         , url = endpoint ++ "/spaces/" ++ Auth.spaceId ++ "/entries"
---         , body = Http.emptyBody
---         , expect = Http.expectJson entriesDecoder
---         , timeout = Nothing
---         , withCredentials = False
---         }
+getEntriesRequest : Http.Request (List Entry)
+getEntriesRequest =
+    Http.request
+        { method = "GET"
+        , headers = [ Http.header "Authorization" ("Bearer " ++ Auth.accessToken) ]
+        , url =
+            endpoint
+                ++ "/spaces/"
+                ++ Auth.spaceId
+                ++ "/entries"
+                ++ "?content_type="
+                ++ Auth.postContentTypeId
+        , body = Http.emptyBody
+        , expect = Http.expectJson entriesDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
 entriesDecoder : Json.Decoder (List Entry)
