@@ -1,8 +1,11 @@
 # elm-contentful : Simple GUI feeded by contentful content in Elm!
 
 This attempts to be a simple GUI application that reads content
-from [Contentful](https://contentful.com/), in order to make it work you'll need
-three things:
+from [Contentful](https://contentful.com/).
+
+## Getting started
+
+In order to make this work you'll need three things:
 
 ### 1. Space ID
 
@@ -60,3 +63,10 @@ accessToken =
 postContentTypeId =
     "1vNf6iFeZewu2ZCX9usYlo"
 ```
+
+Please note that the keys shown above are for demonstration purposes only and
+they won't work for you, you need to get them out from your Contentful account,
+refer to the *Getting started* section for instructions in how to do this.
+
+The `Auth.elm` file has been added to the `.gitignore` file, this means that if
+you ever commit changes to this repo your API Keys will not be exposed by mistake.
