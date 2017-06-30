@@ -30,19 +30,28 @@ type alias Model =
     { contents : String
     , entries : List Contentful.Entry
     , mdl : Material.Model
+    , selectedTab : Int
+    }
+
+
+model : Model
+model =
+    { contents = ""
+    , entries = []
+    , mdl = Material.model
+    , selectedTab = 0
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" [] Material.model
-    , getContentful
-    )
+    ( model, getContentful )
 
 
 type Msg
     = ApiResponded (Result Http.Error String)
     | HandleEntriesResponse (Result Http.Error (List Contentful.Entry))
+    | SelectTab Int
     | Mdl (Material.Msg Msg)
 
 
@@ -71,6 +80,9 @@ update msg model =
             in
                 ( model, Cmd.none )
 
+        SelectTab num ->
+            { model | selectedTab = num } ! []
+
         Mdl msg_ ->
             Material.update Mdl msg_ model
 
@@ -81,13 +93,14 @@ view model =
         Layout.render Mdl
             model.mdl
             [ Layout.fixedHeader
+            , Layout.onSelectTab SelectTab
             ]
             { header =
                 [ h2 [ style [ ( "padding", "2rem" ) ] ]
                     [ text "Elm, Contentful & Fun with Decoders" ]
                 ]
             , drawer = []
-            , tabs = ( [], [] )
+            , tabs = ( [ text "Home", text "New Entry" ], [] )
             , main =
                 [ grid []
                     [ cell [ size All 6, offset All 3 ] [ viewBody model ]
@@ -98,6 +111,19 @@ view model =
 
 viewBody : Model -> Html Msg
 viewBody model =
+    case model.selectedTab of
+        0 ->
+            viewHome model
+
+        1 ->
+            viewAdminArea model
+
+        _ ->
+            h1 [] [ text "404 Not Found" ]
+
+
+viewHome : Model -> Html msg
+viewHome model =
     div []
         [ span [] [ text model.contents ]
         , br [] []
@@ -105,7 +131,7 @@ viewBody model =
         ]
 
 
-viewEntry : Contentful.Entry -> Html Msg
+viewEntry : Contentful.Entry -> Html msg
 viewEntry entry =
     Options.div
         [ Elevation.e6
@@ -115,6 +141,12 @@ viewEntry entry =
         [ h3 [] [ text entry.title ]
         , article [] [ text entry.body ]
         ]
+
+
+viewAdminArea : Model -> Html Msg
+viewAdminArea model =
+    div []
+        [ text "Insert a form here dude!" ]
 
 
 subscriptions : Model -> Sub Msg
