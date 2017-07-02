@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Contentful
 import Debug exposing (log)
 import Html exposing (..)
 import Material
@@ -32,6 +33,32 @@ update msg model =
                     in
                         ( model, Cmd.none )
 
+        HandlePublishedEntryResponse result ->
+            case result of
+                Ok _ ->
+                    ( { model | selectedTab = 0 }, Cmd.none )
+
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "We got problemo upon entry publishment!" err
+                    in
+                        ( model, Cmd.none )
+
+        HandleNewEntryResponse result ->
+            case result of
+                Ok newEntryId ->
+                    ( { model | newPostTitle = "", newPostBody = "" }
+                    , publishContentful newEntryId
+                    )
+
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "We got problemo upon entry creation!" err
+                    in
+                        ( model, Cmd.none )
+
         ApiResponded (Ok newContents) ->
             ( { model | contents = (Debug.log "Api dice" newContents) }, Cmd.none )
 
@@ -41,6 +68,21 @@ update msg model =
                     Debug.log "Error es: " error
             in
                 ( model, Cmd.none )
+
+        SetPostTitle title ->
+            { model | newPostTitle = title } ! []
+
+        SetPostBody body ->
+            { model | newPostBody = body } ! []
+
+        CreateNewPost ->
+            ( model
+            , postContentful
+                (Contentful.Entry
+                    model.newPostTitle
+                    model.newPostBody
+                )
+            )
 
         SelectTab num ->
             { model | selectedTab = num } ! []

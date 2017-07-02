@@ -6,6 +6,7 @@ import Http
 import Json.Decode as Json
 import Json.Decode.Extra exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional)
+import Json.Encode as Encode
 
 
 type alias Entry =
@@ -30,11 +31,18 @@ spaceDecoder =
         |> required "name" Json.string
 
 
-{-| Defines the Contentful API endpoint
+{-| Defines the Contentful Content Delivery API endpoint
 -}
-endpoint : String
-endpoint =
+endpointCDA : String
+endpointCDA =
     "https://cdn.contentful.com/"
+
+
+{-| Defines the Contentful Content Management API endpoint
+-}
+endpointCMA : String
+endpointCMA =
+    "https://api.contentful.com/"
 
 
 {-| Generate a custom `GET` request to obtain the "/space/:spaceId" resource.
@@ -44,7 +52,7 @@ getSpaceRequest =
     Http.request
         { method = "GET"
         , headers = [ Http.header "Authorization" ("Bearer " ++ Auth.accessToken) ]
-        , url = endpoint ++ "/spaces/" ++ Auth.spaceId
+        , url = endpointCDA ++ "/spaces/" ++ Auth.spaceId
         , body = Http.emptyBody
         , expect = Http.expectJson spaceDecoder
         , timeout = Nothing
@@ -60,7 +68,7 @@ getEntriesRequest =
         { method = "GET"
         , headers = [ Http.header "Authorization" ("Bearer " ++ Auth.accessToken) ]
         , url =
-            endpoint
+            endpointCDA
                 ++ "/spaces/"
                 ++ Auth.spaceId
                 ++ "/entries"
@@ -83,3 +91,87 @@ entryDecoder =
     decode Entry
         |> required "fields" (Json.field "title" Json.string)
         |> required "fields" (Json.field "body" Json.string)
+
+
+putEntryRequest : String -> Http.Request String
+putEntryRequest entryId =
+    Http.request
+        { method = "PUT"
+        , headers =
+            [ Http.header "Authorization" ("Bearer " ++ Auth.personalToken)
+            , Http.header "X-Contentful-Version" "1"
+            ]
+        , url =
+            endpointCMA
+                ++ "/spaces/"
+                ++ Auth.spaceId
+                ++ "/entries/"
+                ++ entryId
+                ++ "/published"
+        , body = Http.emptyBody
+        , expect = Http.expectString
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+postEntryRequest : Entry -> Http.Request String
+postEntryRequest entry =
+    Http.request
+        { method = "POST"
+        , headers =
+            [ Http.header "Authorization"
+                ("Bearer "
+                    ++ Auth.personalToken
+                )
+            , Http.header "X-Contentful-Content-Type" Auth.postContentTypeId
+            ]
+        , url =
+            endpointCMA
+                ++ "/spaces/"
+                ++ Auth.spaceId
+                ++ "/entries"
+        , body = Http.jsonBody (entryEncoder entry)
+        , expect = Http.expectJson (Json.at [ "sys", "id" ] Json.string)
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+entryEncoder : Entry -> Encode.Value
+entryEncoder entry =
+    Encode.object
+        [ ( "fields"
+          , Encode.object
+                [ ( "title"
+                  , (Encode.object [ ( "en-US", Encode.string entry.title ) ])
+                  )
+                , ( "body"
+                  , (Encode.object [ ( "en-US", Encode.string entry.body ) ])
+                  )
+                , ( "author", authorEncoder Auth.defaultAuthorId )
+                ]
+          )
+        ]
+
+
+authorEncoder : String -> Encode.Value
+authorEncoder authorId =
+    (Encode.object
+        [ ( "en-US"
+          , Encode.list
+                [ (Encode.object
+                    [ ( "sys"
+                      , (Encode.object
+                            [ ( "id", Encode.string authorId )
+                            , ( "linkType", Encode.string "Entry" )
+                            , ( "type", Encode.string "Link" )
+                            ]
+                        )
+                      )
+                    ]
+                  )
+                ]
+          )
+        ]
+    )
