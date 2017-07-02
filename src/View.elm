@@ -2,13 +2,14 @@ module View exposing (..)
 
 import Contentful
 import Html exposing (..)
-import Html.Attributes exposing (style, required)
+import Html.Attributes exposing (style, required, href)
 import Material
 import Material.Button as Button
 import Material.Color as Color
 import Material.Elevation as Elevation
 import Material.Grid exposing (..)
 import Material.Layout as Layout
+import Material.List as Lists
 import Material.Options as Options exposing (css)
 import Material.Scheme
 import Material.Textfield as Textfield
@@ -28,7 +29,7 @@ view model =
                 [ h2 [ style [ ( "padding", "2rem" ) ] ]
                     [ text "Elm, Contentful & Fun with Decoders" ]
                 ]
-            , drawer = []
+            , drawer = viewDrawer model
             , tabs = ( [ text "Home", text "New Entry" ], [] )
             , main =
                 [ grid []
@@ -36,6 +37,22 @@ view model =
                     ]
                 ]
             }
+
+
+viewDrawer : Model -> List (Html Msg)
+viewDrawer model =
+    [ Layout.title [] [ text "Links" ]
+    , Layout.navigation []
+        [ Lists.content []
+            [ Layout.link
+                [ Layout.href "#" ]
+                [ Lists.icon "code" [], text " GitHub" ]
+            , Layout.link
+                [ Layout.href "#" ]
+                [ Lists.icon "subscriptions" [], text " Screencast" ]
+            ]
+        ]
+    ]
 
 
 viewBody : Model -> Html Msg
@@ -51,7 +68,7 @@ viewBody model =
             h1 [] [ text "404 Not Found" ]
 
 
-viewHome : Model -> Html msg
+viewHome : Model -> Html Msg
 viewHome model =
     div []
         [ span [] [ text model.contents ]
@@ -98,8 +115,8 @@ viewAdminArea model =
                 , Button.render Mdl
                     [ 0 ]
                     model.mdl
-                    [ Button.raised
-                    , Options.onClick GoHome
+                    [ Options.onClick GoHome
+                    , Button.accent
                     , Options.css "margin-left" "10px"
                     ]
                     [ text "Cancel" ]
