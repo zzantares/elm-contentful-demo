@@ -14,4 +14,5 @@ type Msg
     | SetPostTitle String
     | SetPostBody String
     | CreateNewPost
+    | GoHome
     | Mdl (Material.Msg Msg)

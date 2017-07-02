@@ -2,7 +2,7 @@ module View exposing (..)
 
 import Contentful
 import Html exposing (..)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (style, required)
 import Material
 import Material.Button as Button
 import Material.Color as Color
@@ -95,6 +95,14 @@ viewAdminArea model =
                     , Options.onClick CreateNewPost
                     ]
                     [ text "Publish new Entry" ]
+                , Button.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Button.raised
+                    , Options.onClick GoHome
+                    , Options.css "margin-left" "10px"
+                    ]
+                    [ text "Cancel" ]
                 ]
             ]
         ]
@@ -109,6 +117,7 @@ inputPostTitle model =
         , Textfield.floatingLabel
         , Textfield.text_
         , Options.onInput SetPostTitle
+        , Options.attribute (required True)
         ]
         []
 
@@ -123,5 +132,6 @@ inputPostBody model =
         , Textfield.textarea
         , Textfield.rows 6
         , Options.onInput SetPostBody
+        , Options.attribute (required True)
         ]
         []

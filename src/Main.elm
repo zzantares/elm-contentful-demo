@@ -4,6 +4,7 @@ import Contentful
 import Debug exposing (log)
 import Html exposing (..)
 import Material
+import Material.Snackbar as Snackbar
 import Messages exposing (..)
 import Models exposing (..)
 import View exposing (..)
@@ -76,13 +77,22 @@ update msg model =
             { model | newPostBody = body } ! []
 
         CreateNewPost ->
-            ( model
-            , postContentful
-                (Contentful.Entry
-                    model.newPostTitle
-                    model.newPostBody
+            if
+                String.isEmpty (String.trim model.newPostTitle)
+                    || String.isEmpty (String.trim model.newPostBody)
+            then
+                ( model, Cmd.none )
+            else
+                ( model
+                , postContentful
+                    (Contentful.Entry
+                        model.newPostTitle
+                        model.newPostBody
+                    )
                 )
-            )
+
+        GoHome ->
+            { model | selectedTab = 0, newPostTitle = "", newPostBody = "" } ! []
 
         SelectTab num ->
             { model | selectedTab = num } ! []
