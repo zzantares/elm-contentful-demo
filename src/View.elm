@@ -1,8 +1,10 @@
 module View exposing (..)
 
+import Auth
 import Contentful
 import Html exposing (..)
-import Html.Attributes exposing (style, required, href)
+import Html.Attributes exposing (style, required, href, value, defaultValue)
+import Html.Events exposing (onInput)
 import Material
 import Material.Button as Button
 import Material.Color as Color
@@ -73,12 +75,12 @@ viewHome model =
     div []
         [ span [] [ text model.contents ]
         , br [] []
-        , div [] (List.map viewEntry model.entries)
+        , div [] (List.indexedMap viewEntry model.entries)
         ]
 
 
-viewEntry : Contentful.Entry -> Html msg
-viewEntry entry =
+viewEntry : Int -> Contentful.Entry -> Html Msg
+viewEntry idx entry =
     Options.div
         [ Elevation.e6
         , css "margin-bottom" "20px"
@@ -86,6 +88,15 @@ viewEntry entry =
         ]
         [ h3 [] [ text entry.title ]
         , article [] [ text entry.body ]
+        , hr [] []
+        , Button.render Mdl
+            [ 0 ]
+            model.mdl
+            [ Button.colored
+
+            -- , Options.onClick (ReadEntry idx)
+            ]
+            [ text "Read more" ]
         ]
 
 
@@ -101,7 +112,13 @@ viewAdminArea model =
         [ h3 [] [ text "New entry" ]
         , div []
             [ div [ style [ ( "text-align", "center" ) ] ]
-                [ div [] [ inputPostTitle model ]
+                [ select
+                    [ onInput SetAuthorId
+                    , defaultValue
+                        Auth.defaultAuthorId
+                    ]
+                    (List.map (\a -> option [ value a.id ] [ text a.name ]) model.authors)
+                , div [] [ inputPostTitle model ]
                 , div [] [ inputPostBody model ]
                 , Button.render Mdl
                     [ 0 ]

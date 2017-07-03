@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Auth
 import Contentful
 import Debug exposing (log)
 import Html exposing (..)
@@ -49,7 +50,7 @@ update msg model =
         HandleNewEntryResponse result ->
             case result of
                 Ok newEntryId ->
-                    ( { model | newPostTitle = "", newPostBody = "" }
+                    ( { model | newPostTitle = "", newPostBody = "", newPostAuthor = "" }
                     , publishContentful newEntryId
                     )
 
@@ -57,6 +58,18 @@ update msg model =
                     let
                         _ =
                             Debug.log "We got problemo upon entry creation!" err
+                    in
+                        ( model, Cmd.none )
+
+        HandleAuthorsResponse result ->
+            case result of
+                Ok newAuthors ->
+                    ( { model | authors = newAuthors }, Cmd.none )
+
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "We got problemo getting authors!" err
                     in
                         ( model, Cmd.none )
 
@@ -76,6 +89,9 @@ update msg model =
         SetPostBody body ->
             { model | newPostBody = body } ! []
 
+        SetAuthorId authorId ->
+            { model | newPostAuthor = (Debug.log "author s" authorId) } ! []
+
         CreateNewPost ->
             if
                 String.isEmpty (String.trim model.newPostTitle)
@@ -83,13 +99,21 @@ update msg model =
             then
                 ( model, Cmd.none )
             else
-                ( model
-                , postContentful
-                    (Contentful.Entry
-                        model.newPostTitle
-                        model.newPostBody
+                let
+                    author =
+                        if String.isEmpty (String.trim model.newPostAuthor) then
+                            Auth.defaultAuthorId
+                        else
+                            model.newPostAuthor
+                in
+                    ( model
+                    , postContentful
+                        (Contentful.Entry
+                            model.newPostTitle
+                            model.newPostBody
+                            author
+                        )
                     )
-                )
 
         GoHome ->
             { model | selectedTab = 0, newPostTitle = "", newPostBody = "" } ! []

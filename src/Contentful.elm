@@ -12,13 +12,19 @@ import Json.Encode as Encode
 type alias Entry =
     { title : String
 
-    -- , author : String
     -- , publishedAt : Date.Date
     , body : String
+    , author : String
     }
 
 
 type alias Space =
+    { id : String
+    , name : String
+    }
+
+
+type alias Author =
     { id : String
     , name : String
     }
@@ -81,6 +87,37 @@ getEntriesRequest =
         }
 
 
+getAuthorsRequest : Http.Request (List Author)
+getAuthorsRequest =
+    Http.request
+        { method = "GET"
+        , headers = [ Http.header "Authorization" ("Bearer " ++ Auth.personalToken) ]
+        , url =
+            endpointCMA
+                ++ "/spaces/"
+                ++ Auth.spaceId
+                ++ "/entries"
+                ++ "?content_type="
+                ++ Auth.authorContentTypeId
+        , body = Http.emptyBody
+        , expect = Http.expectJson authorsDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+authorsDecoder : Json.Decoder (List Author)
+authorsDecoder =
+    Json.at [ "items" ] (Json.list authorDecoder)
+
+
+authorDecoder : Json.Decoder Author
+authorDecoder =
+    decode Author
+        |> required "sys" (Json.field "id" Json.string)
+        |> required "fields" (Json.at [ "name", "en-US" ] Json.string)
+
+
 entriesDecoder : Json.Decoder (List Entry)
 entriesDecoder =
     Json.at [ "items" ] (Json.list entryDecoder)
@@ -91,6 +128,17 @@ entryDecoder =
     decode Entry
         |> required "fields" (Json.field "title" Json.string)
         |> required "fields" (Json.field "body" Json.string)
+        |> required "fields"
+            (Json.at [ "author" ]
+                (Json.index 0
+                    (Json.at
+                        [ "sys"
+                        , "id"
+                        ]
+                        Json.string
+                    )
+                )
+            )
 
 
 putEntryRequest : String -> Http.Request String
@@ -149,7 +197,7 @@ entryEncoder entry =
                 , ( "body"
                   , (Encode.object [ ( "en-US", Encode.string entry.body ) ])
                   )
-                , ( "author", authorEncoder Auth.defaultAuthorId )
+                , ( "author", authorEncoder entry.author )
                 ]
           )
         ]
