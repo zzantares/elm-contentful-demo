@@ -47,7 +47,7 @@ viewDrawer model =
     , Layout.navigation []
         [ Lists.content []
             [ Layout.link
-                [ Layout.href "#" ]
+                [ Layout.href "https://github.com/ZzAntares/elm-contentful-demo" ]
                 [ Lists.icon "code" [], text " GitHub" ]
             , Layout.link
                 [ Layout.href "#" ]
