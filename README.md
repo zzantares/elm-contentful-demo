@@ -1,7 +1,9 @@
 # elm-contentful : Simple GUI feeded by contentful content in Elm!
 
-This attempts to be a simple GUI application that reads content
+This is a simple GUI application that reads content
 from [Contentful](https://contentful.com/).
+
+![screen shot 2017-07-03 at 00 24 12](https://user-images.githubusercontent.com/3653680/27779439-994b739a-5f88-11e7-857e-7d0c56f5648c.png)
 
 ## Getting started
 
